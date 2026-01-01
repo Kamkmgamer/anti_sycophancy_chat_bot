@@ -1,69 +1,137 @@
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-
-import { LatestPost } from "~/app/_components/post";
-import { auth } from "~/server/auth";
-import { api, HydrateClient } from "~/trpc/server";
+import { MessageSquare, Shield, Zap, ArrowRight } from "lucide-react";
+import { ChatInterface } from "~/components/chat/chat-interface";
+import { HydrateClient } from "~/trpc/server";
+import { Button } from "~/components/ui/button";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  const session = await auth();
+  const { userId } = await auth();
 
-  if (session?.user) {
-    void api.post.getLatest.prefetch();
+  if (userId) {
+    return (
+      <HydrateClient>
+        <ChatInterface />
+      </HydrateClient>
+    );
   }
 
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
+    <main className="flex min-h-screen flex-col">
+      {/* Navigation */}
+      <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 flex items-center justify-between border-b px-6 py-4 backdrop-blur">
+        <div className="flex items-center gap-2">
+          <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-lg">
+            <Shield className="text-primary-foreground h-5 w-5" />
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
-
-            <div className="flex flex-col items-center justify-center gap-4">
-              <p className="text-center text-2xl text-white">
-                {session && <span>Logged in as {session.user?.name}</span>}
-              </p>
-              <Link
-                href={session ? "/api/auth/signout" : "/api/auth/signin"}
-                className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-              >
-                {session ? "Sign out" : "Sign in"}
-              </Link>
-            </div>
-          </div>
-
-          {session?.user && <LatestPost />}
+          <span className="text-xl font-bold tracking-tight">TruthBot</span>
         </div>
-      </main>
-    </HydrateClient>
+        <div className="flex gap-4">
+          <Link href="/sign-in">
+            <Button variant="ghost">Sign In</Button>
+          </Link>
+          <Link href="/sign-up">
+            <Button>Get Started</Button>
+          </Link>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="from-background to-muted/50 flex flex-1 flex-col items-center justify-center bg-gradient-to-b px-4 py-24 text-center">
+        <div className="max-w-3xl space-y-8">
+          <div className="focus:ring-ring bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-semibold transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none">
+            Now with Anti-Sycophancy v1.0
+          </div>
+
+          <h1 className="text-foreground text-4xl font-extrabold tracking-tight sm:text-6xl">
+            An AI that tells you <br className="hidden sm:inline" />
+            <span className="text-primary">what you need to hear</span>
+          </h1>
+
+          <p className="text-muted-foreground mx-auto max-w-xl text-lg leading-relaxed">
+            Most chatbots are programmed to agree with you. TruthBot is
+            different. It provides honest, critical, and nuanced responses—even
+            when they contradict your views.
+          </p>
+
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+            <Link href="/sign-up">
+              <Button size="lg" className="h-12 px-8 text-base">
+                Start Chatting Free <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <Link
+              href="https://github.com/your-repo"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 px-8 text-base"
+              >
+                View on GitHub
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="container mx-auto px-4 py-24">
+        <div className="grid gap-8 md:grid-cols-3">
+          <Feature
+            icon={<Shield className="h-6 w-6" />}
+            title="Brutally Honest"
+            description="Our dual-agent system verifies every response to ensure it's not just validating your biases."
+          />
+          <Feature
+            icon={<Zap className="h-6 w-6" />}
+            title="High Performance"
+            description="Powered by Cerebras AI for lightning-fast inference speeds on large language models."
+          />
+          <Feature
+            icon={<MessageSquare className="h-6 w-6" />}
+            title="Complex Reasoning"
+            description="Capable of handling nuanced debates and providing multi-faceted perspectives."
+          />
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="text-muted-foreground bg-muted/20 border-t py-8 text-center text-sm">
+        <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 sm:flex-row">
+          <p>&copy; 2024 TruthBot AI. All rights reserved.</p>
+          <div className="flex gap-6">
+            <Link href="#" className="hover:text-foreground hover:underline">
+              Privacy
+            </Link>
+            <Link href="#" className="hover:text-foreground hover:underline">
+              Terms
+            </Link>
+          </div>
+        </div>
+      </footer>
+    </main>
+  );
+}
+
+function Feature({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="bg-card flex flex-col gap-4 rounded-xl border p-6 transition-all hover:shadow-lg">
+      <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-lg">
+        {icon}
+      </div>
+      <h3 className="text-xl font-bold">{title}</h3>
+      <p className="text-muted-foreground leading-relaxed">{description}</p>
+    </div>
   );
 }
