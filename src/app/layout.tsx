@@ -11,9 +11,16 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Anti-Sycophancy Bot",
+  title: "TruthBot",
   description: "An AI assistant that speaks truth without flattery",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [{ rel: "icon", url: "/icon.png" }],
+  openGraph: {
+    title: "TruthBot",
+    description:
+      "An AI assistant that speaks truth without flattery. No more yes-men.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    type: "website",
+  },
 };
 
 export default function RootLayout({
