@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Bot } from "lucide-react";
+import { Bot, Menu } from "lucide-react";
+import { Button } from "~/components/ui/button";
 import { MessageBubble, TypingIndicator } from "./message-bubble";
 import { MessageInput } from "./message-input";
 
@@ -19,6 +20,7 @@ export interface ChatWindowProps {
   onSendMessage: (message: string) => void;
   isLoading?: boolean;
   isTyping?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export function ChatWindow({
@@ -27,6 +29,7 @@ export function ChatWindow({
   onSendMessage,
   isLoading,
   isTyping,
+  onToggleSidebar,
 }: ChatWindowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +43,15 @@ export function ChatWindow({
   return (
     <div className="bg-background flex h-full flex-col">
       {/* Header */}
-      <div className="bg-card/50 flex items-center gap-3 border-b px-6 py-4 backdrop-blur">
+      <div className="bg-card/50 flex items-center gap-3 border-b px-4 py-3 backdrop-blur md:px-6 md:py-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={onToggleSidebar}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
         <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
           <Bot className="text-primary h-5 w-5" />
         </div>

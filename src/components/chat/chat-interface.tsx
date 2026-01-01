@@ -11,6 +11,7 @@ export function ChatInterface() {
   const [activeThreadId, setActiveThreadId] = useState<number | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Queries
   const { data: threadsData, refetch: refetchThreads } =
@@ -85,6 +86,7 @@ export function ChatInterface() {
   const handleSelectThread = useCallback((threadId: number) => {
     setActiveThreadId(threadId);
     setOptimisticMessages([]);
+    setIsMobileMenuOpen(false); // Close mobile menu when thread is selected
   }, []);
 
   const handleCreateThread = useCallback(
@@ -157,7 +159,9 @@ export function ChatInterface() {
 
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* Desktop Sidebar */}
       <ThreadSidebar
+        className="hidden md:flex"
         threads={threads}
         activeThreadId={activeThreadId}
         onSelectThread={handleSelectThread}
@@ -167,6 +171,28 @@ export function ChatInterface() {
           createThreadMutation.isPending || deleteThreadMutation.isPending
         }
       />
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <ThreadSidebar
+            className="bg-background animate-in slide-in-from-left relative z-50 w-72"
+            threads={threads}
+            activeThreadId={activeThreadId}
+            onSelectThread={handleSelectThread}
+            onCreateThread={handleCreateThread}
+            onDeleteThread={handleDeleteThread}
+            isLoading={
+              createThreadMutation.isPending || deleteThreadMutation.isPending
+            }
+          />
+        </div>
+      )}
+
       <main className="flex-1 overflow-hidden">
         <ChatWindow
           messages={allMessages}
@@ -174,6 +200,7 @@ export function ChatInterface() {
           onSendMessage={handleSendMessage}
           isLoading={sendMessageMutation.isPending}
           isTyping={isTyping}
+          onToggleSidebar={() => setIsMobileMenuOpen(true)}
         />
       </main>
     </div>

@@ -31,6 +31,7 @@ export interface ThreadSidebarProps {
   onCreateThread: (parentThreadId?: number) => void;
   onDeleteThread: (threadId: number) => void;
   isLoading?: boolean;
+  className?: string; // Add className prop
 }
 
 export function ThreadSidebar({
@@ -40,6 +41,7 @@ export function ThreadSidebar({
   onCreateThread,
   onDeleteThread,
   isLoading,
+  className,
 }: ThreadSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
@@ -59,6 +61,7 @@ export function ThreadSidebar({
       className={cn(
         "bg-muted/10 relative flex h-full flex-col border-r transition-all duration-300",
         isCollapsed ? "w-16" : "w-72",
+        className, // Merge className
       )}
     >
       {/* Header */}
