@@ -61,7 +61,7 @@ export default async function Home() {
               </Button>
             </Link>
             <Link
-              href="https://github.com/your-repo"
+              href="https://github.com/Kamkmgamer/anti_sycophancy_chat_bot/tree/main"
               target="_blank"
               rel="noreferrer"
             >
@@ -101,7 +101,7 @@ export default async function Home() {
       {/* Footer */}
       <footer className="text-muted-foreground bg-muted/20 border-t py-8 text-center text-sm">
         <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 sm:flex-row">
-          <p>&copy; 2024 TruthBot AI. All rights reserved.</p>
+          <p>&copy; 2026 khalil abdlmageed. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="#" className="hover:text-foreground hover:underline">
               Privacy
