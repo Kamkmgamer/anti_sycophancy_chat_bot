@@ -36,7 +36,7 @@ A fantasy-themed chatbot that speaks truth, not flattery. Built with the T3 Stac
 1. **Clone the repository**
 
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/Kamkmgamer/anti_sycophancy_chat_bot
    cd anti_sycophancy_chat_bot
    ```
 
