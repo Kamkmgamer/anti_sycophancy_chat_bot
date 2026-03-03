@@ -3,6 +3,7 @@
 import { cn } from "~/lib/utils";
 import { formatRelativeTime } from "~/lib/utils";
 import { Bot, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 export interface MessageBubbleProps {
   content: string;
@@ -44,7 +45,7 @@ export function MessageBubble({
             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current [animation-delay:-0.15s]" />
             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current" />
           </div>
-        ) : (
+        ) : isFromUser ? (
           <>
             <p className="whitespace-pre-wrap">{content}</p>
             <p
@@ -58,6 +59,20 @@ export function MessageBubble({
               {formatRelativeTime(new Date(timestamp))}
             </p>
           </>
+        ) : (
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <ReactMarkdown>{content}</ReactMarkdown>
+            <p
+              className={cn(
+                "mt-1 text-xs opacity-50",
+                isFromUser
+                  ? "text-primary-foreground/80"
+                  : "text-muted-foreground",
+              )}
+            >
+              {formatRelativeTime(new Date(timestamp))}
+            </p>
+          </div>
         )}
       </div>
 
