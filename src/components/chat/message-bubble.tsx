@@ -47,27 +47,19 @@ export function MessageBubble({
             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current [animation-delay:-0.15s]" />
             <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-current" />
           </div>
-        ) : isFromUser ? (
-          <>
-            <p className="whitespace-pre-wrap">{content}</p>
-            <p
-              className={cn(
-                "mt-1 text-xs opacity-50",
-                isFromUser
-                  ? "text-primary-foreground/80"
-                  : "text-muted-foreground",
-              )}
-            >
-              {formatRelativeTime(new Date(timestamp))}
-            </p>
-          </>
         ) : (
-          <div className="prose prose-sm dark:prose-invert max-w-none">
+          <div className={cn(
+            "prose prose-sm max-w-none text-current",
+            !isFromUser && "dark:prose-invert",
+            isFromUser && "prose-p:text-primary-foreground prose-headings:text-primary-foreground prose-strong:text-primary-foreground prose-a:text-primary-foreground prose-pre:bg-transparent prose-pre:p-0 prose-pre:m-0"
+          )}>
             <ReactMarkdown
               components={{
+                p({ children }) {
+                  return <p className={cn(isFromUser ? "whitespace-pre-wrap" : "")}>{children}</p>;
+                },
                 code({ className, children, ...props }) {
                   const match = /language-(\w+)/.exec(className ?? "");
-                  const isInline = !match && !className;
                   const codeString =
                     typeof children === "string"
                       ? children
@@ -75,10 +67,18 @@ export function MessageBubble({
                         ? children.join("")
                         : "";
 
+                  const isBlock = match || codeString.includes("\n");
+                  const isInline = !isBlock;
+
                   if (isInline) {
                     return (
                       <code
-                        className="bg-primary/20 text-primary rounded px-1.5 py-0.5 font-mono text-xs"
+                        className={cn(
+                          "rounded px-1.5 py-0.5 font-mono text-xs",
+                          isFromUser
+                            ? "bg-primary-foreground/20 text-primary-foreground"
+                            : "bg-primary/20 text-primary"
+                        )}
                         {...props}
                       >
                         {children}
