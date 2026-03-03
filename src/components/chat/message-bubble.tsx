@@ -4,6 +4,8 @@ import { cn } from "~/lib/utils";
 import { formatRelativeTime } from "~/lib/utils";
 import { Bot, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 export interface MessageBubbleProps {
   content: string;
@@ -61,7 +63,49 @@ export function MessageBubble({
           </>
         ) : (
           <div className="prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown>{content}</ReactMarkdown>
+            <ReactMarkdown
+              components={{
+                code({ className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className ?? "");
+                  const isInline = !match && !className;
+                  const codeString =
+                    typeof children === "string"
+                      ? children
+                      : Array.isArray(children)
+                        ? children.join("")
+                        : "";
+
+                  if (isInline) {
+                    return (
+                      <code
+                        className="bg-primary/20 text-primary rounded px-1.5 py-0.5 font-mono text-xs"
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    );
+                  }
+
+                  return (
+                    <SyntaxHighlighter
+                      style={oneDark}
+                      language={match ? match[1] : "text"}
+                      PreTag="div"
+                      className="my-2 rounded-md text-xs"
+                      customStyle={{
+                        margin: 0,
+                        borderRadius: "0.375rem",
+                        fontSize: "0.8125rem",
+                      }}
+                    >
+                      {codeString.replace(/\n$/, "")}
+                    </SyntaxHighlighter>
+                  );
+                },
+              }}
+            >
+              {content}
+            </ReactMarkdown>
             <p
               className={cn(
                 "mt-1 text-xs opacity-50",
