@@ -25,10 +25,16 @@ export interface CerebrasResponse {
   };
 }
 
+const MODEL_FALLBACK_CHAIN = [
+  "zai-glm-4.7",
+  "qwen-3-235b-a22b-instruct-2507",
+  "llama3.1-8b",
+];
+
 /**
  * Cerebras AI Client
- * 
- * Uses the Cerebras API to generate responses with their gpt-oss-120b model.
+ *
+ * Uses the Cerebras API with automatic model fallback.
  * API structure follows OpenAI-compatible format.
  */
 export async function callCerebras(
@@ -37,46 +43,75 @@ export async function callCerebras(
     temperature?: number;
     maxTokens?: number;
     model?: string;
-  }
+  },
 ): Promise<string> {
-  const { 
-    temperature = 0.7, 
-    maxTokens = 1024,
-    model = "gpt-oss-120b"
-  } = options ?? {};
+  const { temperature = 0.3, maxTokens = 1024, model } = options ?? {};
 
-  try {
-    const response = await fetch(env.CEREBRAS_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${env.CEREBRAS_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-      }),
-    });
+  // If a specific model is requested, use it; otherwise try the fallback chain
+  const modelsToTry = model ? [model] : MODEL_FALLBACK_CHAIN;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[Cerebras] API Error:", response.status, errorText);
-      throw new Error(`Cerebras API error: ${response.status}`);
+  let lastError: Error | null = null;
+
+  for (const currentModel of modelsToTry) {
+    try {
+      console.log(`[Cerebras] Trying model: ${currentModel}`);
+
+      const response = await fetch(env.CEREBRAS_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${env.CEREBRAS_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: currentModel,
+          messages,
+          temperature,
+          max_tokens: maxTokens,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        const isModelNotFound =
+          response.status === 404 &&
+          errorText.includes("does not exist or you do not have access");
+
+        if (
+          isModelNotFound &&
+          modelsToTry.indexOf(currentModel) < modelsToTry.length - 1
+        ) {
+          console.warn(
+            `[Cerebras] Model ${currentModel} unavailable, trying next fallback...`,
+          );
+          lastError = new Error(`Model ${currentModel} not available`);
+          continue;
+        }
+
+        console.error("[Cerebras] API Error:", response.status, errorText);
+        throw new Error(`Cerebras API error: ${response.status}`);
+      }
+
+      const data = (await response.json()) as CerebrasResponse;
+
+      if (!data.choices?.[0]?.message?.content) {
+        throw new Error("Invalid response structure from Cerebras");
+      }
+
+      console.log(`[Cerebras] Success with model: ${currentModel}`);
+      return data.choices[0].message.content;
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("Cerebras API error")
+      ) {
+        throw error;
+      }
+      lastError = error instanceof Error ? error : new Error(String(error));
     }
-
-    const data = await response.json() as CerebrasResponse;
-    
-    if (!data.choices?.[0]?.message?.content) {
-      throw new Error("Invalid response structure from Cerebras");
-    }
-
-    return data.choices[0].message.content;
-  } catch (error) {
-    console.error("[Cerebras] Request failed:", error);
-    throw error;
   }
+
+  console.error("[Cerebras] All models failed. Last error:", lastError);
+  throw lastError ?? new Error("All Cerebras models failed");
 }
 
 /**

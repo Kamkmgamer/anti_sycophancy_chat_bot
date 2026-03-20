@@ -67,7 +67,7 @@ export function MessageBubble({
                         ? children.join("")
                         : "";
 
-                  const isBlock = match || codeString.includes("\n");
+                  const isBlock = match !== null || codeString.includes("\n");
                   const isInline = !isBlock;
 
                   if (isInline) {
